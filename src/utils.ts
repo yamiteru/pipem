@@ -181,3 +181,32 @@ export const or = <T>(
 
 	return true;
 });
+
+type DoesIncludeUnderscore<T> = T extends infer Z 
+	? Z extends "_" 
+		? unknown
+		: T
+	: never;
+
+export const match = <
+	O extends Record<string | number, unknown>,
+	X extends {
+		[K in keyof O]: (data: O[K]) => unknown
+	}
+>(options: X) => <
+	K extends keyof X,
+	S extends DoesIncludeUnderscore<K>,
+>(data: S) => {
+		return data as unknown as X[K] extends (data: unknown) => infer X
+			? X
+			: never;
+	};
+
+const statusMatch = match({
+	404: (v) => `${v} - Not found`,
+	500: (v) => `${v} - Internal error`,
+	_: (v) => `${v} - Unknown error`
+});
+
+const res = statusMatch(500);
+
