@@ -22,6 +22,7 @@ import {
   lt,
   lte,
   map,
+  match,
   minus,
   multiply,
   neq,
@@ -301,5 +302,25 @@ describe("Methods", () => {
 
 		expect(isAlive(-10)).toBe(undefined);
 		expect(isAlive(10)).toBe(undefined);
+	});
+
+	test("match", () => {
+		const statusMatch = match({
+			404: (v) => `${v} - Not found`,
+			500: (v) => `${v} - Internal error`,
+			_: (v) => `${v} - Unknown error`
+		});
+
+		expect(statusMatch(404)).toBe(404);	
+		expect(statusMatch(6969)).toBe(undefined);
+
+		// const numberOfCharsMatch = match<number>([
+		// 	[(v) => v < 100, () => 2],
+		// 	[(v) => v < 1000, () => 3],
+		// 	[() => true, () => 4]
+		// ]);
+
+		// expect(numberOfCharsMatch(69)).toBe(2);
+		// expect(numberOfCharsMatch(42069)).toBe(4);
 	});
 });
