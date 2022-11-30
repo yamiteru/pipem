@@ -182,31 +182,70 @@ export const or = <T>(
 	return true;
 });
 
-type DoesIncludeUnderscore<T> = T extends infer Z 
+type InferOptionInput<T> = T extends infer Z 
 	? Z extends "_" 
 		? unknown
 		: T
 	: never;
 
+type SimpleObject = Record<string | number, unknown>;
+
+type InferOptionObject<
+	O extends SimpleObject
+> = {
+	[K in keyof O]: (data: O[K]) => unknown;
+};
+
+type InferOptionOutput<
+	O extends SimpleObject,
+	K extends Keys<O>
+> = O[K] extends (data: unknown) => infer X
+	? X
+	: never;
+
+type Keys<T extends SimpleObject> = keyof T;
+
 export const match = <
-	O extends Record<string | number, unknown>,
-	X extends {
-		[K in keyof O]: (data: O[K]) => unknown
-	}
+	O extends SimpleObject,
+	X extends InferOptionObject<O>
 >(options: X) => <
-	K extends keyof X,
-	S extends DoesIncludeUnderscore<K>,
+	K extends Keys<X>,
+	S extends InferOptionInput<K>,
 >(data: S) => {
-		return data as unknown as X[K] extends (data: unknown) => infer X
-			? X
-			: never;
+		return data as unknown as InferOptionOutput<X, K>;
 	};
 
-const statusMatch = match({
-	404: (v) => `${v} - Not found`,
-	500: (v) => `${v} - Internal error`,
-	_: (v) => `${v} - Unknown error`
+export const match2 = <
+	T extends unknown[],
+	X = {
+		[I in keyof T]: [
+			(data: unknown) => boolean, 
+			(data: T[I]) => unknown
+		]
+	}
+>(options: O) => (data: unknown) => {
+
+};
+
+// const statusMatch = match({
+// 	404: (v) => `${v} - Not found`,
+// 	500: (v) => `${v} - Internal error`,
+// 	_: (v) => `${v} - Unknown error`
+// });
+// 
+// const res = statusMatch(500);
+
+match2<[404, 500]>({
+	404: 0,
+	500: 0,
+	2: 0
 });
 
-const res = statusMatch(500);
+const testMatch = match2<[404]>([
+	[(v) => v === 404, (v) => `${v} - Not found`]
+]);
+
+
+
+
 
